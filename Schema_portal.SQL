@@ -4,8 +4,8 @@
 --   TOAD Version       : 9.0.1.8 
 --   DB Connect String  : TESTE 
 --   Schema             : PORTAL 
---   Script Created by  : FINANCEIRO 
---   Script Created at  : 23/04/2021 15:31:19 
+--   Script Created by  : ARTBOX 
+--   Script Created at  : 07/05/2021 17:05:15 
 --   Physical Location  :  
 --   Notes              :  
 --
@@ -16,7 +16,7 @@
 --   Packages: 2        Lines of Code: 164 
 --   Package Bodies: 2  Lines of Code: 536 
 --   Sequences: 9 
---   Tables: 7          Columns: 43         Constraints: 15     
+--   Tables: 7          Columns: 44         Constraints: 15     
 --   Triggers: 1 
 --   Types: 1 
 --   Views: 1           
@@ -123,6 +123,21 @@ CREATE SEQUENCE SQ_UNIDADE_FEDERATIVA
   NOORDER;
 
 
+CREATE TABLE PT_DOMINIOS
+(
+  PDO_SQ         NUMBER                         NOT NULL,
+  PDO_NOME       VARCHAR2(40 BYTE)              NOT NULL,
+  PDO_DOMINIO    VARCHAR2(40 BYTE)              NOT NULL,
+  PDO_VALOR      VARCHAR2(40 BYTE)              NOT NULL,
+  PDO_DESCRICAO  VARCHAR2(40 BYTE)              NOT NULL
+)
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+
 CREATE TABLE CIDADE
 (
   SEQ_CIDADE  NUMBER                            NOT NULL,
@@ -200,20 +215,6 @@ CREATE TABLE PT_APLICACAO_GRUPO
   PAG_NM_GRUPO    VARCHAR2(40 BYTE)             NOT NULL,
   PAG_FL_BLOQ     VARCHAR2(1 BYTE)              DEFAULT 'N'                   NOT NULL,
   PAG_FL_VISIVEL  VARCHAR2(1 BYTE)              DEFAULT 'S'                   NOT NULL
-)
-LOGGING 
-NOCOMPRESS 
-NOCACHE
-NOPARALLEL
-MONITORING;
-
-
-CREATE TABLE PT_DOMINIOS
-(
-  PDO_SQ         NUMBER                         NOT NULL,
-  PDO_DOMINIO    VARCHAR2(40 BYTE)              NOT NULL,
-  PDO_VALOR      VARCHAR2(40 BYTE)              NOT NULL,
-  PDO_DESCRICAO  VARCHAR2(40 BYTE)              NOT NULL
 )
 LOGGING 
 NOCOMPRESS 
@@ -1012,26 +1013,31 @@ CREATE OR REPLACE TRIGGER TRG_PT_DOMINIOS_biu
    For Each Row
 Begin
 
-	 --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 -- Sequência
-	 --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-	 If :New.pdo_sq Is Null Then
-			Select seq_pt_dominios.Nextval Into :New.pdo_sq From dual;
-	 End If;
+  --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  -- Sequência
+  --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+  If :New.pdo_sq Is Null Then
+   Select seq_pt_dominios.Nextval Into :New.pdo_sq From dual;
+  End If;
 
-	 :New.pdo_dominio   := upper(:New.pdo_dominio);
-	 :New.pdo_valor     := upper(:New.pdo_valor);
-	 :New.pdo_descricao := upper(:New.pdo_descricao);
+  :New.pdo_dominio   := upper(:New.pdo_dominio);
+  :New.pdo_valor     := upper(:New.pdo_valor);
+  :New.pdo_descricao := upper(:New.pdo_descricao);
 
 Exception
-	 When Others Then
-			raise_application_error(-20000, 'Erro ao inserir sequence. TRG_PT_DOMINIOS_biu' || Sqlerrm);
-	 
+  When Others Then
+   raise_application_error(-20000, 'Erro ao inserir sequence. TRG_PT_DOMINIOS_biu' || Sqlerrm);
+
 End;
 /
 SHOW ERRORS;
 
 
+
+ALTER TABLE PT_DOMINIOS ADD (
+  CONSTRAINT PDO_PK
+ PRIMARY KEY
+ (PDO_SQ));
 
 ALTER TABLE CIDADE ADD (
   CONSTRAINT AVCON_1606244228_STA_B_000
@@ -1056,11 +1062,6 @@ ALTER TABLE PT_APLICACAO_GRUPO ADD (
   CONSTRAINT PAO_PK
  PRIMARY KEY
  (PAG_SQ));
-
-ALTER TABLE PT_DOMINIOS ADD (
-  CONSTRAINT PDO_PK
- PRIMARY KEY
- (PDO_SQ));
 
 ALTER TABLE BAIRRO ADD (
   CONSTRAINT AVCON_1606244228_STA_B_001
