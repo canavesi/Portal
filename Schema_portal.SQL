@@ -4,8 +4,8 @@
 --   TOAD Version       : 9.0.1.8 
 --   DB Connect String  : TESTE 
 --   Schema             : PORTAL 
---   Script Created by  : ARTBOX 
---   Script Created at  : 07/05/2021 17:05:15 
+--   Script Created by  : PORTAL 
+--   Script Created at  : 19/05/2021 14:13:57 
 --   Physical Location  :  
 --   Notes              :  
 --
@@ -16,9 +16,10 @@
 --   Packages: 2        Lines of Code: 164 
 --   Package Bodies: 2  Lines of Code: 536 
 --   Sequences: 9 
---   Tables: 7          Columns: 44         Constraints: 15     
+--   Tables: 7          Columns: 44         Constraints: 16     
 --   Triggers: 1 
 --   Types: 1 
+--   Type Bodies: 1 
 --   Views: 1           
 
 
@@ -32,11 +33,56 @@ CREATE OR REPLACE Type obt_end As Object
    bairro         Varchar2(40),
    cidade         Varchar2(40),
    uf             Varchar2(2),
+   v_endereco     Varchar2(120),
+
+   Constructor Function obt_end(p_seq_logradouro Number, p_num number, p_comp varchar2) Return Self As Result,
+
+   Member Function mostra_endereco Return Varchar2,
 
 -- Member functions and procedures
 --Member Procedure < procedurename > (< parameter > < datatype >)
    Member Function endereco(p_seq_logradouro Number) Return Varchar2
 )
+/
+
+SHOW ERRORS;
+
+
+CREATE OR REPLACE Type Body obt_end As
+
+   Constructor Function obt_end(p_seq_logradouro Number, p_num number, p_comp varchar2) Return Self As Result Is
+   
+   Begin
+   
+	  Select tpo || ' ' || logradouro || ', ' || p_num || ' ' || p_comp || ' ' || bairro || ' ' || cidade || ' ' || uf || ' ' || 
+	  substr(cep,1,5) || '-' || substr(cep,6,8) cep
+	  Into   Self.v_endereco
+	  From   vw_enderecos
+	  Where  seq_logradouro = p_seq_logradouro;
+   
+	  Return;
+   End;
+
+   Member Function mostra_endereco Return Varchar2 Is
+   Begin
+	  Return initcap(lower(Self.v_endereco));
+   End;
+
+   -- Member procedures and functions
+   Member Function endereco(p_seq_logradouro Number) Return Varchar2 Is
+   
+	  v_endereco Varchar2(120) := Null;
+   
+   Begin
+	  Select tpo || ' ' || logradouro || ' ' || bairro || ' ' || cidade || ' ' || uf || ' ' || cep
+	  Into   v_endereco
+	  From   vw_enderecos
+	  Where  seq_logradouro = p_seq_logradouro;
+   
+	  Return v_endereco;
+   End endereco;
+
+End;
 /
 
 SHOW ERRORS;
@@ -61,7 +107,7 @@ CREATE SEQUENCE SEQ_PT_APLICACAO_ITEM
 
 
 CREATE SEQUENCE SEQ_PT_DOMINIOS
-  START WITH 28
+  START WITH 33
   MAXVALUE 9999999999999999999999999999
   MINVALUE 1
   NOCYCLE
@@ -1037,7 +1083,9 @@ SHOW ERRORS;
 ALTER TABLE PT_DOMINIOS ADD (
   CONSTRAINT PDO_PK
  PRIMARY KEY
- (PDO_SQ));
+ (PDO_SQ),
+  CONSTRAINT PDO_UK01
+ UNIQUE (PDO_DOMINIO, PDO_VALOR));
 
 ALTER TABLE CIDADE ADD (
   CONSTRAINT AVCON_1606244228_STA_B_000
@@ -1073,28 +1121,28 @@ ALTER TABLE BAIRRO ADD (
 ALTER TABLE PT_APLICACAO_ITEM ADD (
   CONSTRAINT PAM_PAO_FK 
  FOREIGN KEY (PAG_SQ) 
- REFERENCES PT_APLICACAO_GRUPO (PAG_SQ),
+ REFERENCES,
   CONSTRAINT PAM_PSA_FK 
  FOREIGN KEY (PSA_SQ) 
- REFERENCES PT_SISTEMA (PSA_SQ));
+ REFERENCES);
 
 ALTER TABLE LOGRADOURO ADD (
   CONSTRAINT LOO_BAO_FK 
  FOREIGN KEY (SEQ_BAIRRO) 
- REFERENCES BAIRRO (SEQ_BAIRRO),
+ REFERENCES,
   CONSTRAINT LOO_CIE_FK 
  FOREIGN KEY (SEQ_CIDADE) 
- REFERENCES CIDADE (SEQ_CIDADE));
+ REFERENCES);
 
 ALTER TABLE PT_APLICACAO_GRUPO ADD (
   CONSTRAINT PAO_PSA_FK 
  FOREIGN KEY (PSA_SQ) 
- REFERENCES PT_SISTEMA (PSA_SQ));
+ REFERENCES);
 
 ALTER TABLE BAIRRO ADD (
   CONSTRAINT BAO_CIE_FK 
  FOREIGN KEY (SEQ_CIDADE) 
- REFERENCES CIDADE (SEQ_CIDADE));
+ REFERENCES);
 
 GRANT SELECT ON  BAIRRO TO ARTBOX;
 
