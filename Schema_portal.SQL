@@ -5,7 +5,7 @@
 --   DB Connect String  : TESTE 
 --   Schema             : PORTAL 
 --   Script Created by  : ARTBOX 
---   Script Created at  : 07/06/2021 13:54:43 
+--   Script Created at  : 21/06/2021 15:03:13 
 --   Physical Location  :  
 --   Notes              :  
 --
